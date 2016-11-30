@@ -9,6 +9,7 @@
 #include <math.h>
 #include <time.h>   /*使用当前时钟做种子生成随机数*/
 #include <ctype.h>
+#include "getch.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -409,7 +410,7 @@ void anti_escape(char *s,char *t){
 	s[j] = '\0';
 }
 
-int atoiv2(char *s){/*将整数字符串转换成整型数，遇到非整数字符则中止*/
+int a2iv2(char *s){/*将整数字符串转换成整型数，遇到非整数字符则中止*/
 	int i, n, sign;
 
 	for (i = 0; isspace(s[i]); i++)  /* skip white space */
@@ -651,4 +652,194 @@ void expand(const char * s1,char *s2){
 		}else
 			s2[j++] = c;/*如果不是连字符 - 后跟字符，那么就原样复制 s1 中的字符*/
 	s2[j] = '\0';
+}
+
+/*reverse 函数：倒置字符串 s 中各个字符的位置*/
+void reverse(char *s){
+       int c, i, j;
+
+       for (i = 0, j = strlen(s)-1; i < j; i++, j--)
+	    c = s[i], s[i] = s[j], s[j] = c;
+}
+
+/*itoa 函数：将数字 n 转换为字符串并保存到 s 中*/
+void i2a(int n,char *s){
+	int i, sign;
+	if((sign = n) < 0)/*记录符号*/
+		n = -n;       /*使 n 成为正数*/
+	i = 0;
+	do{              /*以反序生成数字*/
+		s[i++] = n % 10 +'0';/*通过取余的方式来得到最右侧的个位数，并转换为字符*/
+	}while((n /= 10) > 0); /*通过除 10 来不断删除最右侧的个位数*/
+	if(sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
+	reverse(s);
+}
+
+/*itoa2 函数：改写itoa函数，上面的函数不能处理最大负数，改进型itoa2函数可以在任何机器上运行*/
+#define abs(x) ((x) < 0 ? -(x):(x))
+void i2a2(int n,char *s){
+	int i, sign;
+	sign = n; /*记录符号*/
+	i = 0;
+	do{                          /*以反序生成数字*/
+		s[i++] = abs(n % 10)+'0';/*通过使用绝对值取余的方式来避开负数问题*/
+	}while((n /= 10) != 0);/*改用 (n /= 10) != 0 取代 (n /= 10) > 0 避免 n 是负数而陷入死循环*/
+	if(sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
+	reverse(s);
+}
+
+/*itoa4 函数：采用递归方法改写 itoa2 函数*/
+void i2a4(int n,char *s){
+	static int i;
+	if(n/10)
+		i2a4(n/10,s);
+	else{
+		i = 0;
+		if(n<0)
+			s[i++]='-';
+	}
+	s[i++]=abs(n)%10 +'0';
+	s[i]='\0';
+}
+
+/*itob 函数：用于将整数 n 转换为以 b 为底的数，并将转换结果以字符的形式保存到字符串 s 中，例如：
+ * itob(n,s,16) 是把整数 n 格式化成 16 进制整数保存在 s 中*/
+void i2b(int n,char *s,int b){
+	int i, j, sign;
+	if((sign = n) < 0)/*记录符号*/
+		n = -n;       /*使 n 成为正数*/
+	i = 0;
+	do{              /*以反序生成数字*/
+		j = n % b;
+		s[i++] = (j <= 9)? j+'0': j-10+'A';/*通过取模的方式来得到最右侧的个位数，并转换为字符*/
+	}while((n /= b) > 0); /*通过除 b 来不断删除最右侧的个位数*/
+	if(sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
+	reverse(s);
+}
+
+/*itoa3 函数：将数字 n 转换为字符串并保存到 s 中，第 3 个参数用于指定输出最小字段宽度，如果值小于该宽度，则左边补空格*/
+void i2a3(int n,char *s,int width){
+	int i, sign;
+	if((sign = n) < 0)/*记录符号*/
+		n = -n;       /*使 n 成为正数*/
+	i = 0;
+	do{              /*以反序生成数字*/
+		s[i++] = n % 10 +'0';/*通过取余的方式来得到最右侧的个位数，并转换为字符*/
+	}while((n /= 10) > 0); /*通过除 10 来不断删除最右侧的个位数*/
+	if(sign < 0)
+		s[i++] = '-';
+	while(i < width)
+		s[i++] = ' ';   /*不足部分补空格*/
+	s[i] = '\0';
+	reverse(s);
+}
+
+/*getline 函数：将行保存到 s 中，并返回改行的长度*/
+int getline(char *s,int lim){/*lim 参数为一行最大的输入字符数*/
+	int c, i;
+	i = 0;
+	while(--lim > 0 && (c = getchar())!= EOF && c != '\n')
+		s[i++] = c;
+	if(c == '\n')
+		s[i++] = c;
+	s[i] = '\0';
+	return i;
+}
+
+/*strindex 函数：返回 t 在 s 中的位置，若未找到则返回 -1（FALSE）*/
+int strindex(char *s,char *t){
+	int i, j, k;
+	for(i = 0; s[i] != '\0'; i++){
+		for(j=i,k=0;t[k] != '\0' && s[j] == t[k];j++,k++)
+			;
+		if(k > 0 && t[k] == '\0')
+			return i;
+	}
+	return FALSE;
+}
+
+/*strrindex 函数：返回字符串 t 在 s 中最右边出现的位置，如果 s 中不包含 t，则返回 -1（FALSE）*/
+int strrindex(char *s,char *t){
+	int i, j, k;
+	for(i = strlen(s)-strlen(t);i >= 0;i-- ){/*从字符串右边开始扫描，以 t 字符串长度为单位*/
+		for(j=i,k=0;t[k]!='\0'&&s[j]==t[k];j++,k++)
+			;
+		if(k>0&&t[k]=='\0')
+			return i;
+	}
+	return FALSE;
+}
+
+/*atof 函数：把字符串 s 转换为相应的双精度浮点数*/
+double a2f(char *s){
+	double val, power;
+	int i, sign, e_sign, exp;
+	for(i=0;isspace(s[i]);i++)/*跳过空格符*/
+		;
+	sign = (s[i] == '-')?-1:1;
+	if(s[i]=='+'||s[i]=='-')/*跳过符号位*/
+		i++;
+	for(val=0.0;isdigit(s[i]);i++)
+		val = 10.0*val+(s[i]-'0');
+	if(s[i]=='.')/*跳过小数点*/
+		i++;
+	for(power=1.0;isdigit(s[i]);i++){
+		val = 10.0*val+(s[i]-'0');
+		power *= 10.0;
+	}
+	/*如果有指数部分，则处理指数部分*/
+	if(s[i]=='e'||s[i]=='E'){
+		i++;/*跳过 e/E 字符*/
+		e_sign = s[i];/*取指数符号位*/
+		if(s[i]=='+'||s[i]=='-')/*跳过指数的符号位*/
+			i++;
+		for(exp=0;isdigit(s[i]);i++)/*取出指数位*/
+			exp = 10*exp+(s[i]-'0');
+		if(e_sign == '-'){
+			while(exp-- > 0)
+				power *= 10.0;
+		}else{
+			while(exp-- > 0)
+				val *= 10.0;
+		}
+	}
+	return sign * val / power;
+}
+
+/*printd函数：打印十进制数n*/
+void printd(int n){
+	if(n<0){
+		putchar('-');
+		n = -n;
+	}
+	if(n/10)
+		printd(n/10);
+	putchar(n%10 + '0');
+}
+
+/* getint 函数：  将输入的下一个整型数赋值给 *pn */
+int getint(int *pn){
+	int c, sign;
+
+	while (isspace(c = getch()))   /* 跳过空白符 */
+		;
+	if (!isdigit(c) && c != EOF && c != '+' && c != '-') {
+		ungetch(c);  /* 输入的不是一个数字 */
+		return 0;
+	}
+	sign = (c == '-') ? -1 : 1;
+	if (c == '+' || c == '-')
+		c = getch();
+	for (*pn = 0; isdigit(c);c = getch())
+		*pn = 10 * *pn + (c - '0');
+	*pn *= sign;
+	if (c != EOF)
+		ungetch(c);
+	return c;
 }

@@ -34,13 +34,16 @@ main(){
 //	printf("\n");
 //	printf("the index of number 110 in the array is:%d",insert_search(110,array,0,size-1));
 //	printf("the index of number 854 in the array is:%d",fibonacci_search(854,array,size));
-	char *s1 = "-A-Za-z0-9-a-A0a-b-c-!-~";
-	char *s2;
-	s2 = (char *)malloc(1000*sizeof(char));
-	if(!s2)
-		return 0;
-	expand(s1,s2);
-	for(int i = 0; s2[i] != '\0'; i++)
-		printf("%c",s2[i]);
-	free(s2);
+//	char *s1 = "-A-Za-z0-9-a-A0a-b-c-!-~";
+//	char *s2;
+//	s2 = (char *)malloc(1000*sizeof(char));
+//	if(!s2)
+//		return 0;
+//	expand(s1,s2);
+//	for(int i = 0; s2[i] != '\0'; i++)
+//		printf("%c",s2[i]);
+//	free(s2);
+	int a;
+	getint(&a);
+	printf("a = %d\n",a);
 }
