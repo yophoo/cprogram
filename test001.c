@@ -9,6 +9,7 @@
 #include <math.h>
 #include <time.h>   /*使用当前时钟做种子生成随机数*/
 #include <ctype.h>
+#include <string.h>
 #include "getch.h"
 
 #define TRUE 1
@@ -291,6 +292,7 @@ void squeeze_c2(char *s,char *c){ /*从字符串 s 中找到字符串 c 中的匹配字符并删除
 	s[k] = '\0';
 }
 
+/*str_cat函数：数组实现*/
 char * str_cat(const char *s,const char *t){/*将字符串 t 连接到字符串 s 的尾部*/
 	int i,j;
 	char * buff;
@@ -302,6 +304,59 @@ char * str_cat(const char *s,const char *t){/*将字符串 t 连接到字符串 s 的尾部*/
 	while((buff[i++] = t[j++]) != '\0')/*在缓存区尾部复制 t 字符串*/
 		;
 	return buff;
+}
+
+/*str_cat 函数：指针实现*/
+void str_cat2(char *s,char *t){
+	while(*s != '\0')
+		s++;
+	while((*s++ = *t++) != '\0')
+		;
+}
+
+/*str_end(s,t)函数：如果字符串 t 出现在字符串 s 尾部，该函数返回 1，否则返回 0*/
+int str_end(char *s,char *t){
+	char *bs = s;/*字符串 s 的开始*/
+	char *bt = t;/*字符串 t 的开始*/
+
+	while(*s != '\0')/*找到字符串 s 的结尾*/
+		s++;
+	while(*t != '\0')/*找到字符串 t 的结尾*/
+		t++;
+	for(;*s == *t;s--,t--)/*从尾部开始往前比较字符串 s 和 t，直到出现字符不相同，或者到某个字符串的开始位置为止*/
+		if(t == bt || s == bs)
+			break;/*到了某个字符串的开始位置，则退出循环*/
+	if(*s == *t && t == bt && *s != '\0')/*到了字符串 t 的开始位置，并且都不是空字符*/
+		return 1;
+	else
+		return 0;
+}
+
+/*str_ncpy(s,t,n) 函数：从字符串 t 中复制 n 个字符到 s 中*/
+void str_ncpy(char *s,char *t,int n){
+	while((*t !='\0') && (n-- > 0))/* 字符串 t 没有到末端，且 n 非 0*/
+		*s++ = *t++;
+	while(n-- > 0)
+		*s = '\0';/*字符串 s 其余部分都补 0*/
+}
+
+/*str_ncat(s,t,n) 函数：从字符串 t 中取 n 个字符到 s 的末端*/
+void str_ncat(char *s,char *t,int n){
+	while(*s++ != '\0')
+		;
+	s--;/*后退一个空字符*/
+	while(n-- > 0)
+		*s++ = *t++;
+	*s = '\0';
+}
+
+/*str_ncmp(s,t,n) 函数：比较字符串 s 和 t 的前 n 个字符，并根据 s 按照字典顺序小于、等于或大于 t 的结果
+ * 分别返回负整数、0或正整数*/
+int str_ncmp(char *s,char *t,int n){
+	for(;*s == *t;s++,t++)
+		if(*s == '\0' || --n <= 0)/*如果 s 字符串已经结束或者已经比较了 n 个字符*/
+			return 0;
+	return *s - *t;
 }
 
 void squeeze_str(char *s,char *c){ /*从字符串 s 中找到字符串 c 并删除*/
