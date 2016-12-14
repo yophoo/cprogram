@@ -65,8 +65,26 @@ main(){
 //	str_ncat(s,_t,11);
 //	printf("%s\n",s);
 //	free(s);
-	char *s = "hello java";
-	char *t = "hello world";
-	printf("%d",str_ncmp(s,t,5));
+
+//	int i = -23456;
+//	char *s;
+//	s = (char*)malloc(100*sizeof(char));
+//	i2a5(i,s);
+//	printf("%s",s);
+//	free(s);
+
+//	char *s = "hello java";
+//	char *t = "java";
+//	printf("%d",strindex2(s,t));
+
+//	char *s = "-12.345e-3";
+//	printf("%lf",a2f2(s));
+
+	char *s;
+	s = (char*)malloc(100*sizeof(char));
+	strcpy(s,"hello world");
+	reverse3(s);
+	printf("%s",s);
+	free(s);
 
 }

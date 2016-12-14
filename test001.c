@@ -262,6 +262,33 @@ int atoi(const char *s){/* 将字符串 s 转换为相应的整型数，遇到非数字字符结束*/
 	return n;
 }
 
+/*atoi 函数：将字符串 s 转换为整型数，采用指针实现*/
+int a2i(char *s){
+	int n, sign;
+
+	for(; isspace(*s); s++)
+		;
+	sign = (*s == '-')? -1 : 1;
+	if(*s == '+' || *s == '-')
+		s++;
+	for(n = 0; isdigit(*s); s++)
+		n = 10 * n + (*s - '0');
+	return sign * n;
+}
+
+int a2iv2(char *s){/*将整数字符串转换成整型数，遇到非整数字符则中止*/
+	int i, n, sign;
+
+	for (i = 0; isspace(s[i]); i++)  /* skip white space */
+		;
+	sign = (s[i] == '-') ? -1 : 1;
+	if (s[i] == '+' || s[i] == '-')  /* skip sign */
+		i++;
+	for (n = 0; isdigit(s[i]); i++)
+		n = 10 * n + (s[i] - '0');
+	return sign * n;
+}
+
 int lower(int c){ /* lower 函数：将字符 c 转换成小写形式，只适用于 ASCII 码 */
 	if (c >= 'A' && c <= 'Z')
 		return c + 'a' - 'A';
@@ -463,19 +490,6 @@ void anti_escape(char *s,char *t){
 			s[j++] = t[i];
 	}
 	s[j] = '\0';
-}
-
-int a2iv2(char *s){/*将整数字符串转换成整型数，遇到非整数字符则中止*/
-	int i, n, sign;
-
-	for (i = 0; isspace(s[i]); i++)  /* skip white space */
-		;
-	sign = (s[i] == '-') ? -1 : 1;
-	if (s[i] == '+' || s[i] == '-')  /* skip sign */
-		i++;
-	for (n = 0; isdigit(s[i]); i++)
-		n = 10 * n + (s[i] - '0');
-	return sign * n;
 }
 
 /*冒泡排序：比较两个相邻元素，如果第一个比第二个大，则交换位置*/
@@ -717,6 +731,34 @@ void reverse(char *s){
 	    c = s[i], s[i] = s[j], s[j] = c;
 }
 
+/*reverse2 函数：倒置字符串 s 中各个字符的位置，采用指针改写*/
+void reverse2(char *s){
+	int c;
+	char *t;
+
+	for(t = s + (strlen(s)-1);s < t; s++,t--){/*t 指针指向 s 的尾部*/
+		c = *s;
+		*s = *t;
+		*t = c;
+	}
+}
+
+/*reverse3 函数：倒置字符串 s 中各个字符的位置，递归版本*/
+void reverse3(char *s){
+	reverser(s,0,strlen(s));
+}
+/*reverser 函数：递归方式倒置字符串 s 中各个字符的位置*/
+void reverser(char *s,int i,int len){
+	int c,j;
+	j = len -(i+1);
+	if(i < j){
+		c = s[i];
+		s[i] = s [j];
+		s[j] = c;
+		reverser(s,++i,len);
+	}
+}
+
 /*itoa 函数：将数字 n 转换为字符串并保存到 s 中*/
 void i2a(int n,char *s){
 	int i, sign;
@@ -747,6 +789,23 @@ void i2a2(int n,char *s){
 	reverse(s);
 }
 
+/*itoa3 函数：将数字 n 转换为字符串并保存到 s 中，第 3 个参数用于指定输出最小字段宽度，如果值小于该宽度，则左边补空格*/
+void i2a3(int n,char *s,int width){
+	int i, sign;
+	if((sign = n) < 0)/*记录符号*/
+		n = -n;       /*使 n 成为正数*/
+	i = 0;
+	do{              /*以反序生成数字*/
+		s[i++] = n % 10 +'0';/*通过取余的方式来得到最右侧的个位数，并转换为字符*/
+	}while((n /= 10) > 0); /*通过除 10 来不断删除最右侧的个位数*/
+	if(sign < 0)
+		s[i++] = '-';
+	while(i < width)
+		s[i++] = ' ';   /*不足部分补空格*/
+	s[i] = '\0';
+	reverse(s);
+}
+
 /*itoa4 函数：采用递归方法改写 itoa2 函数*/
 void i2a4(int n,char *s){
 	static int i;
@@ -759,6 +818,21 @@ void i2a4(int n,char *s){
 	}
 	s[i++]=abs(n)%10 +'0';
 	s[i]='\0';
+}
+
+/*itoa5 函数：将数字 n 转换为字符串并保存到 s 中，采用指针形式改写*/
+void i2a5(int n,char *s){
+	int sign;
+	char *t = s;      /*保存 s 指针到 t 中*/
+	if((sign = n) < 0)/*记录符号*/
+		n = -n;       /*使 n 成为正数*/
+	do{              /*以反序生成数字*/
+		*s++ = n % 10 +'0';/*通过取余的方式来得到最右侧的个位数，并转换为字符*/
+	}while((n /= 10) > 0); /*通过除 10 来不断删除最右侧的个位数*/
+	if(sign < 0)
+		*s++ = '-';
+	*s = '\0';
+	reverse2(t);
 }
 
 /*itob 函数：用于将整数 n 转换为以 b 为底的数，并将转换结果以字符的形式保存到字符串 s 中，例如：
@@ -774,23 +848,6 @@ void i2b(int n,char *s,int b){
 	}while((n /= b) > 0); /*通过除 b 来不断删除最右侧的个位数*/
 	if(sign < 0)
 		s[i++] = '-';
-	s[i] = '\0';
-	reverse(s);
-}
-
-/*itoa3 函数：将数字 n 转换为字符串并保存到 s 中，第 3 个参数用于指定输出最小字段宽度，如果值小于该宽度，则左边补空格*/
-void i2a3(int n,char *s,int width){
-	int i, sign;
-	if((sign = n) < 0)/*记录符号*/
-		n = -n;       /*使 n 成为正数*/
-	i = 0;
-	do{              /*以反序生成数字*/
-		s[i++] = n % 10 +'0';/*通过取余的方式来得到最右侧的个位数，并转换为字符*/
-	}while((n /= 10) > 0); /*通过除 10 来不断删除最右侧的个位数*/
-	if(sign < 0)
-		s[i++] = '-';
-	while(i < width)
-		s[i++] = ' ';   /*不足部分补空格*/
 	s[i] = '\0';
 	reverse(s);
 }
@@ -817,6 +874,20 @@ int strindex(char *s,char *t){
 			return i;
 	}
 	return FALSE;
+}
+
+/*strindex2 函数：返回 t 在 s 中的位置，若未找到则返回 -1（FALSE），用指针实现*/
+int strindex2(char *s,char *t){
+	char *b = s;  /*字符串 s 的开始位置*/
+	char *p, *r;
+
+	for(;*s != '\0';s++){
+		for(p = s, r = t;*r != '\0' && *p == *r; p++,r++)
+			;
+		if(r > t && *r == '\0')
+			return s - b;/*返回 s 中的位置*/
+	}
+	return -1;
 }
 
 /*strrindex 函数：返回字符串 t 在 s 中最右边出现的位置，如果 s 中不包含 t，则返回 -1（FALSE）*/
@@ -867,6 +938,42 @@ double a2f(char *s){
 	return sign * val / power;
 }
 
+/*atof2 函数：把字符串 s 转换为相应的双精度浮点数，采用指针实现*/
+double a2f2(char *s){
+	double val, power;
+	int sign, e_sign, exp;
+	for(; isspace(*s); s++)/*跳过空格符*/
+		;
+	sign = (*s == '-')?-1:1;
+	if(*s=='+'||*s=='-')/*跳过符号位*/
+		s++;
+	for(val=0.0;isdigit(*s);s++)
+		val = 10.0*val+(*s -'0');
+	if(*s == '.')/*跳过小数点*/
+		s++;
+	for(power=1.0; isdigit(*s); s++){
+		val = 10.0*val+(*s - '0');
+		power *= 10.0;
+	}
+	/*如果有指数部分，则处理指数部分*/
+	if(*s == 'e' || *s == 'E'){
+		s++;/*跳过 e/E 字符*/
+		e_sign = *s;/*取指数符号位*/
+		if(*s == '+' || *s == '-')/*跳过指数的符号位*/
+			s++;
+		for(exp=0; isdigit(*s); s++)/*取出指数位*/
+			exp = 10*exp+(*s - '0');
+		if(e_sign == '-'){
+			while(exp-- > 0)
+				power *= 10.0;
+		}else{
+			while(exp-- > 0)
+				val *= 10.0;
+		}
+	}
+	return sign * val / power;
+}
+
 /*printd函数：打印十进制数n*/
 void printd(int n){
 	if(n<0){
@@ -894,6 +1001,63 @@ int getint(int *pn){
 	for (*pn = 0; isdigit(c);c = getch())
 		*pn = 10 * *pn + (c - '0');
 	*pn *= sign;
+	if (c != EOF)
+		ungetch(c);
+	return c;
+}
+
+/*getint2 函数：在 getint 基础上修改，如果 + 和 - 后跟的不是数字，
+ * 则将 + 和 - 压回输入缓冲区，并返回这个符号以表明这种情况*/
+int getint2(int *pn){
+	int c, d, sign;
+
+	while (isspace(c = getch()))   /* 跳过空白符 */
+		;
+	if (!isdigit(c) && c != EOF && c != '+' && c != '-') {
+		ungetch(c);  /* 输入的不是一个数字 */
+		return 0;
+	}
+	sign = (c == '-') ? -1 : 1;
+	if (c == '+' || c == '-'){
+		d = c;               /*保存该符号*/
+		if(!isdigit(c = getch())){  /*如果符号后面跟的不是数字*/
+			if(c != EOF)     /*如果不是输入结束*/
+				ungetch(c);  /*将该字符push回输入流中*/
+			ungetch(d);      /*将符号 push 回输入流中*/
+			return d;        /*返回符号字符*/
+		}
+	}
+	for (*pn = 0; isdigit(c);c = getch())
+		*pn = 10 * *pn + (c - '0');
+	*pn *= sign;
+	if (c != EOF)
+		ungetch(c);
+	return c;
+}
+
+/* getfloat 函数：  将输入的下一个float数赋值给 *pn */
+int getfloat(float *pn){
+	int c, sign;
+	float pow;
+
+	while (isspace(c = getch()))   /* 跳过空白符 */
+		;
+	if (!isdigit(c) && c != EOF && c != '+' && c != '-' && c != '.') {
+		ungetch(c);  /* 输入的不是一个数字 */
+		return 0;
+	}
+	sign = (c == '-') ? -1 : 1;
+	if (c == '+' || c == '-')
+		c = getch();
+	for (*pn = 0; isdigit(c);c = getch())/*收集整数部分*/
+		*pn = 10.0 * *pn + (c - '0');
+	if(c == '.')
+		c = getch();
+	for(pow = 1.0;isdigit(c);c = getch()){/*收集小数部分*/
+		*pn = 10.0 * *pn + (c - '0');
+		pow *= 10.0;
+	}
+	*pn = *pn * sign/pow;
 	if (c != EOF)
 		ungetch(c);
 	return c;
